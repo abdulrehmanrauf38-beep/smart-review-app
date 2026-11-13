@@ -163,9 +163,28 @@
 
 <script>
   // ====== CONFIGURATION (Edit These 3 Values) ======
-  const RESTAURANT_NAME = "Aaliyan Baba BBQ and Karachi Paratha Roll";
-  const WHATSAPP_NUMBER = "923017955778"; // Country code ke sath, bina '+' ke
-  const GOOGLE_REVIEW_URL = "https://www.google.com/maps/place/Aaliyan+Baba+BBQ+and+Karachi+Paratha+Roll/@31.4450365,74.2762432,17z/data=!4m8!3m7!1s0x3918ffe5092e2527:0xe07d3798a5636b20!8m2!3d31.4450319!4d74.2788181!9m1!1b1!16s%2Fg%2F11snt6k7hc?entry=ttu&g_ep=EgoyMDI2MTExMC4wIKXMDSoASAFQAw%3D%3D";
+ // ====== MULTI-BUSINESS CONFIGURATION ======
+const businesses = {
+  default: {
+    name: "Aaliyan Baba BBQ and Karachi Paratha Roll",
+    whatsapp: "923017955778",
+    googleLink: "https://www.google.com/maps/place/Aaliyan+Baba+BBQ+and+Karachi+Paratha+Roll/@31.4450365,74.2762432,17z/data=!4m8!3m7!1s0x3918ffe5092e2527:0xe07d3798a5636b20!8m2!3d31.4450319!4d74.2788181!9m1!1b1!16s%2Fg%2F11snt6k7hc?entry=ttu&g_ep=EgoyMDI2MTExMC4wIKXMDSoASAFQAw%3D%3D"
+  },
+  wolseley: {
+    name: "The Wolseley Piccadilly",
+    whatsapp: "442074996996",
+    googleLink: "https://www.google.com/maps/place/The+Wolseley+Piccadilly/@51.507446,-0.1434982,17z/data=!3m1!5s0x48760529d61d15c5:0x313717b60ac91dd0!4m8!3m7!1s0x4876052f571cfeaf:0x5350dedd3b5bb322!8m2!3d51.5074427!4d-0.1409233!9m1!1b1!16s%2Fm%2F0416z1j?entry=ttu&g_ep=EgoyMDI2MTExMC4wIKXMDSoASAFQAw%3D%3D"
+  }
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const clientId = (urlParams.get("id") || "default").toLowerCase();
+const currentBiz = businesses[clientId] || businesses.default;
+
+const RESTAURANT_NAME = currentBiz.name;
+const WHATSAPP_NUMBER = currentBiz.whatsapp;
+const GOOGLE_REVIEW_URL = currentBiz.googleLink;
+// ==========================================
   // =================================================
 
   document.getElementById("rest-name").innerText = RESTAURANT_NAME;
