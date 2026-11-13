@@ -228,7 +228,7 @@
         document.getElementById("generated-text").innerText = data.review;
         document.getElementById("result-area").style.display = "block";
       } else {
-        alert("Could not generate review. Please try again.");
+        alert("Exact Error: " + (data.error || JSON.stringify(data)));
       }
     } catch (err) {
       alert("Network error. Please try again.");
