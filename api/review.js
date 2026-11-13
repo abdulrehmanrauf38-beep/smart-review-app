@@ -4,13 +4,13 @@ module.exports = async (req, res) => {
   }
 
   const { restaurantName, rating, tags } = req.body || {};
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || "").trim();
 
   if (!apiKey) {
     return res.status(500).json({ error: "GEMINI_API_KEY missing in Vercel" });
   }
 
-  const prompt = `Write a natural, authentic, human-sounding 2-sentence Google review for a restaurant named "${restaurantName}". The customer gave ${rating} out of 5 stars and highlighted: ${tags.join(", ")}. Do not use hashtags, emojis, or robotic marketing words.`;
+  const prompt = `Write a natural, human-sounding 2-sentence Google review for a restaurant named "${restaurantName}". The customer gave ${rating} out of 5 stars and highlighted: ${tags.join(", ")}. No hashtags or emojis.`;
 
   try {
     const response = await fetch(
@@ -26,10 +26,14 @@ module.exports = async (req, res) => {
 
     const data = await response.json();
     if (!response.ok) {
-      return res.status(500).json({ error: data.error?.message || "Gemini API error" });
+      return res.status(500).json({ error: data.error?.message || JSON.stringify(data) });
     }
 
     const reviewText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!reviewText) {
+      return res.status(500).json({ error: "Empty response from Gemini" });
+    }
+
     return res.status(200).json({ review: reviewText });
   } catch (err) {
     return res.status(500).json({ error: err.message });
