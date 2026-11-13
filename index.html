@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rate Your Experience</title>
+  <style>
+    :root {
+      --primary: #d97706;
+      --primary-dark: #b45309;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      background: var(--card);
+      width: 100%;
+      max-width: 420px;
+      padding: 28px 22px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+      text-align: center;
+    }
+    h1 { font-size: 1.4rem; margin: 0 0 6px; }
+    p.subtitle { color: var(--muted); font-size: 0.92rem; margin: 0 0 22px; }
+    
+    /* Stars */
+    .stars { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .star {
+      font-size: 2.5rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: transform 0.15s ease, color 0.15s ease;
+      user-select: none;
+    }
+    .star.active { color: #f59e0b; transform: scale(1.1); }
+
+    /* Sections */
+    .section { display: none; text-align: left; animation: fadeIn 0.25s ease; }
+    .section.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Complaint Form */
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 95px;
+      margin-bottom: 12px;
+    }
+    textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* Tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag.selected {
+      background: #fef3c7;
+      border-color: var(--primary);
+      color: #92400e;
+      font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-whatsapp { background: #16a34a; color: #fff; }
+    .btn-whatsapp:hover { background: #15803d; }
+
+    /* Generated Review Box */
+    .review-box {
+      background: #f1f5f9;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      margin: 14px 0;
+      border-left: 4px solid var(--primary);
+    }
+    .toast {
+      font-size: 0.82rem;
+      color: #16a34a;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1 id="rest-name">Spice & Grill</h1>
+  <p class="subtitle">How was your experience with us today?</p>
+
+  <div class="stars" id="star-container">
+    <span class="star" data-val="1">★</span>
+    <span class="star" data-val="2">★</span>
+    <span class="star" data-val="3">★</span>
+    <span class="star" data-val="4">★</span>
+    <span class="star" data-val="5">★</span>
+  </div>
+
+  <!-- 1-3 Stars: Private Complaint -->
+  <div class="section" id="low-rating-sec">
+    <p style="font-size:0.9rem; margin-top:0;">We're sorry we fell short! Tell our manager directly so we can make it right:</p>
+    <textarea id="complaint-text" placeholder="Write what went wrong (food, service, waiting time)..."></textarea>
+    <button class="btn btn-whatsapp" onclick="sendWhatsApp()">Send Directly to Manager (WhatsApp)</button>
+  </div>
+
+  <!-- 4-5 Stars: AI Review Generator -->
+  <div class="section" id="high-rating-sec">
+    <p style="font-size:0.9rem; margin-top:0;">Glad you loved it! Tap 2–3 highlights to generate a quick review:</p>
+    <div class="tags" id="tags-container">
+      <div class="tag" onclick="toggleTag(this)">Delicious Food</div>
+      <div class="tag" onclick="toggleTag(this)">Great Service</div>
+      <div class="tag" onclick="toggleTag(this)">Family Environment</div>
+      <div class="tag" onclick="toggleTag(this)">Fast Delivery</div>
+      <div class="tag" onclick="toggleTag(this)">Value for Money</div>
+      <div class="tag" onclick="toggleTag(this)">Clean & Cozy</div>
+    </div>
+    <button class="btn btn-primary" id="gen-btn" onclick="generateReview()">Generate Review</button>
+
+    <div id="result-area" style="display:none;">
+      <div class="review-box" id="generated-text"></div>
+      <button class="btn btn-primary" onclick="copyAndRedirect()">Copy & Open Google Review</button>
+      <div class="toast" id="toast-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====== CONFIGURATION (Edit These 3 Values) ======
+  const RESTAURANT_NAME = "Spice & Grill";
+  const WHATSAPP_NUMBER = "923001234567"; // Country code ke sath, bina '+' ke
+  const GOOGLE_REVIEW_URL = "https://g.page/r/YOUR_GOOGLE_PLACE_ID/review";
+  // =================================================
+
+  document.getElementById("rest-name").innerText = RESTAURANT_NAME;
+  let selectedRating = 0;
+
+  // Star click logic
+  document.querySelectorAll(".star").forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = parseInt(star.dataset.val);
+      document.querySelectorAll(".star").forEach(s => {
+        s.classList.toggle("active", parseInt(s.dataset.val) <= selectedRating);
+      });
+
+      document.getElementById("low-rating-sec").classList.toggle("visible", selectedRating <= 3);
+      document.getElementById("high-rating-sec").classList.toggle("visible", selectedRating >= 4);
+    });
+  });
+
+  // Tag toggle logic
+  function toggleTag(el) {
+    el.classList.toggle("selected");
+  }
+
+  // 1-3 Star WhatsApp redirect
+  function sendWhatsApp() {
+    const msg = document.getElementById("complaint-text").value.trim();
+    if (!msg) {
+      alert("Please write a short message first.");
+      return;
+    }
+    const fullText = `Feedback for ${RESTAURANT_NAME} (${selectedRating}/5 Stars):\n${msg}`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fullText)}`, "_blank");
+  }
+
+  // 4-5 Star API call to secure Vercel backend
+  async function generateReview() {
+    const selectedTags = Array.from(document.querySelectorAll(".tag.selected")).map(t => t.innerText);
+    if (selectedTags.length === 0) {
+      alert("Please select at least 1-2 highlights.");
+      return;
+    }
+
+    const btn = document.getElementById("gen-btn");
+    btn.innerText = "Writing review...";
+    btn.disabled = true;
+
+    try {
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantName: RESTAURANT_NAME,
+          rating: selectedRating,
+          tags: selectedTags
+        })
+      });
+
+      const data = await response.json();
+      if (data.review) {
+        document.getElementById("generated-text").innerText = data.review;
+        document.getElementById("result-area").style.display = "block";
+      } else {
+        alert("Could not generate review. Please try again.");
+      }
+    } catch (err) {
+      alert("Network error. Please try again.");
+    } finally {
+      btn.innerText = "Regenerate Review";
+      btn.disabled = false;
+    }
+  }
+
+  // Copy to clipboard & open Google Maps Review
+  async function copyAndRedirect() {
+    const text = document.getElementById("generated-text").innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      document.getElementById("toast-msg").innerText = "Copied! Redirecting to Google...";
+    } catch (e) {
+      document.getElementById("toast-msg").innerText = "Opening Google Reviews...";
+    }
+    setTimeout(() => {
+      window.location.href = GOOGLE_REVIEW_URL;
+    }, 900);
+  }
+</script>
+
+</body>
+</html>
